@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  @apply min-h-full;
+}
+
+body {
+  @apply overflow-x-hidden bg-bg text-ink font-sans antialiased;
+}
+
+.card {
+  @apply bg-white border border-line rounded-2xl shadow-[0_1px_2px_rgba(20,45,80,.04)];
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply btn bg-amber text-deep hover:brightness-95;
+}
+
+.btn-ghost {
+  @apply btn bg-white border border-line text-navy hover:bg-cream;
+}
+
+.input {
+  @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-faint focus:outline-none focus:ring-2 focus:ring-amber/40;
+}
+
+.input-inline {
+  @apply !w-auto min-w-[9rem] shrink-0;
+}
+
+.range-slider {
+  @apply h-2 w-full cursor-pointer appearance-none rounded-full bg-line accent-amber;
+}
+
+.range-slider::-webkit-slider-thumb {
+  @apply h-4 w-4 appearance-none rounded-full border-2 border-white bg-amber shadow;
+}
+
+.filter-bar {
+  @apply flex flex-wrap items-center gap-2;
+}
+
+.recharts-wrapper,
+.recharts-surface {
+  overflow: visible;
+}
+
+.table-wrap {
+  @apply card overflow-x-auto;
+}
+
+.data-table {
+  @apply w-full text-left text-sm;
+}
+
+.data-table thead {
+  @apply bg-cream text-xs text-muted;
+}
+
+.data-table th {
+  @apply px-4 py-2.5 font-medium;
+}
+
+.data-table td {
+  @apply px-4 py-2.5 align-middle;
+}
+
+.data-table tbody tr {
+  @apply border-t border-line hover:bg-cream/70;
+}
+
+.nav-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.nav-scroll::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-line;
+}

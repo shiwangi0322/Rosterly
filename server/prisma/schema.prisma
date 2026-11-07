@@ -1,0 +1,235 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("Administrator")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Pod {
+  id          String     @id
+  name        String
+  short       String
+  description String
+  leadId      String?
+  lead        Employee?  @relation("PodLead", fields: [leadId], references: [id], onDelete: SetNull)
+  employees   Employee[] @relation("PodMembers")
+  brands      Brand[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([leadId])
+}
+
+model Employee {
+  id                 String            @id
+  name               String
+  email              String            @unique
+  phone              String
+  role               String
+  weeklyOff          Int
+  status             String
+  availabilityStart  String
+  availabilityEnd    String
+  joined             DateTime          @db.Date
+  podId              String
+  pod                Pod               @relation("PodMembers", fields: [podId], references: [id])
+  ledPods            Pod[]             @relation("PodLead")
+  brands             EmployeeBrand[]
+  processes          EmployeeProcess[]
+  shifts             Shift[]
+  leaves             LeaveRequest[]
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([podId])
+  @@index([status])
+  @@index([name])
+}
+
+model Brand {
+  id             String         @id
+  name           String
+  category       String
+  minCoverage    Int
+  singleResource Boolean
+  podId          String
+  pod            Pod            @relation(fields: [podId], references: [id])
+  employees      EmployeeBrand[]
+  processes      BrandProcess[]
+  shifts         Shift[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([podId])
+  @@index([name])
+}
+
+model Process {
+  id            String            @id
+  code          String            @unique
+  name          String
+  description   String
+  requiredStaff Int
+  shiftTypes    String[]
+  defaultStart  String
+  defaultEnd    String
+  employees     EmployeeProcess[]
+  brands        BrandProcess[]
+  shifts        Shift[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model EmployeeBrand {
+  employeeId String
+  brandId    String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  brand      Brand    @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@id([employeeId, brandId])
+  @@index([brandId])
+}
+
+model EmployeeProcess {
+  employeeId String
+  processId  String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  process    Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@id([employeeId, processId])
+  @@index([processId])
+}
+
+model BrandProcess {
+  brandId   String
+  processId String
+  brand     Brand   @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  process   Process @relation(fields: [processId], references: [id], onDelete: Cascade)
+
+  @@id([brandId, processId])
+  @@index([processId])
+}
+
+model Shift {
+  id           String   @id
+  employeeId   String
+  brandId      String
+  processId    String
+  date         DateTime @db.Date
+  startTime    String
+  endTime      String
+  breakMinutes Int
+  type         String
+  status       String   @default("scheduled")
+  notes        String   @default("")
+  employee     Employee @relation(fields: [employeeId], references: [id])
+  brand        Brand    @relation(fields: [brandId], references: [id])
+  process      Process  @relation(fields: [processId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([date])
+  @@index([employeeId, date])
+  @@index([brandId, date])
+  @@index([status])
+}
+
+model LeaveRequest {
+  id         String    @id
+  employeeId String
+  type       String
+  status     String
+  startDate  DateTime  @db.Date
+  endDate    DateTime  @db.Date
+  reason     String
+  appliedOn  DateTime  @db.Date
+  decidedAt  DateTime?
+  decidedBy  String?
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model WorkingRule {
+  id                 String   @id @default("default")
+  workingDays        Int[]
+  weeklyHours        Int
+  maxShiftHours      Int
+  minRestHours       Int
+  breakMinutes       Int
+  weeklyOffRequired  Boolean
+  overtimeAllowed    Boolean
+  overtimeAfterHours Int
+  updatedAt          DateTime @updatedAt
+}
+
+model Holiday {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  at        DateTime
+  actor     String
+  action    String
+  detail    String
+  createdAt DateTime @default(now())
+
+  @@index([at])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  kind      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+}
+
+model OrganizationSettings {
+  id               String   @id @default("default")
+  orgName          String
+  orgEmail         String
+  timezone         String
+  weekStartsOn     Int
+  defaultShiftStart String
+  defaultShiftEnd  String
+  defaultBreak     Int
+  defaultShiftType String
+  notifyEmail      Boolean
+  notifyInApp      Boolean
+  notifyCoverage   Boolean
+  notifyLeave      Boolean
+  adminName        String
+  adminEmail       String
+  adminRole        String
+  updatedAt        DateTime @updatedAt
+}
+
+model DismissedConflict {
+  id          String   @id
+  dismissedAt DateTime @default(now())
+}
