@@ -156,7 +156,7 @@ export function AppProvider({ children }) {
         const me = await api('/auth/me')
         if (!live) return
         setAdmin(me)
-        await refresh()
+        refresh().catch(() => {})
       } catch (error) {
         if (!live) return
         if (error.status === 401) {
@@ -200,7 +200,7 @@ export function AppProvider({ children }) {
     const data = await loginRequest(email, password)
     setAdmin(data.admin)
     setBooting(false)
-    await refresh()
+    refresh().catch(() => {})
     return data.admin
   }, [refresh])
 
@@ -208,7 +208,7 @@ export function AppProvider({ children }) {
     const data = await signupRequest(name, email, password)
     setAdmin(data.admin)
     setBooting(false)
-    await refresh()
+    refresh().catch(() => {})
     return data.admin
   }, [refresh])
 
@@ -316,7 +316,9 @@ export function AppProvider({ children }) {
   ), [run])
 
   const saveSettings = useCallback(({ settings, holidays, rules }) => run(async () => {
-    await api('/settings', { method: 'PUT', body: settingsBody(settings) })
+    const updated = await api('/settings', { method: 'PUT', body: settingsBody(settings) })
+    if (updated.admin) setAdmin(updated.admin)
+    if (updated.token) setToken(updated.token)
     if (rules) await api('/rules', { method: 'PUT', body: rulesBody(rules) })
     const current = await api('/holidays')
     const kept = new Set()

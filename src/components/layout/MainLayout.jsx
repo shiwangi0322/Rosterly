@@ -34,8 +34,10 @@ export const SECTIONS = [
 const flat = SECTIONS.flatMap((s) => s[1])
 
 function Sidebar({ onNavigate }) {
-  const { settings } = useApp()
+  const { admin, settings } = useApp()
   const navigate = useNavigate()
+  const accountName = admin?.name || settings.adminName
+  const accountRole = admin?.role || settings.adminRole
   return (
     <>
       <div className="px-4 py-5">
@@ -74,10 +76,10 @@ function Sidebar({ onNavigate }) {
         onClick={() => { onNavigate?.(); navigate('/settings') }}
         className="m-3 flex items-center gap-2 rounded-xl border border-line p-2.5 text-left hover:bg-cream"
       >
-        <Avatar id="admin" name={settings.adminName} size="lg" className="!h-9 !w-9" />
+        <Avatar id={admin?.id || 'admin'} name={accountName} size="lg" className="!h-9 !w-9" />
         <div className="min-w-0 flex-1 text-sm">
-          <div className="font-medium text-navy">{settings.adminName}</div>
-          <div className="text-xs text-muted">{settings.adminRole}</div>
+          <div className="truncate font-medium text-navy">{accountName}</div>
+          <div className="truncate text-xs text-muted">{accountRole}</div>
         </div>
         <ChevronDown size={16} className="text-muted" />
       </button>

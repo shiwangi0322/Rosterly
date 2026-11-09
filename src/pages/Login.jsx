@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ArrowRight, CalendarDays, Eye, EyeOff, ShieldCheck, Sparkles, Users } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import logo from '../assets/rosterly-logo.png'
 import Field from '../components/common/Field'
@@ -14,7 +15,9 @@ const points = [
 
 export default function Login() {
   const { login, signup } = useApp()
-  const [mode, setMode] = useState('login')
+  const location = useLocation()
+  const navigate = useNavigate()
+  const mode = location.pathname === '/signup' ? 'signup' : 'login'
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -84,6 +87,7 @@ export default function Login() {
             <img src={logo} alt="Rosterly" className="w-44" />
           </div>
           <form onSubmit={submit} className="space-y-5 rounded-2xl border border-[#e4e8ef] bg-white px-6 py-7 shadow-[0_24px_70px_rgba(20,45,80,.10)] sm:px-8 sm:py-8">
+            <Link to="/" className="inline-flex items-center gap-1 text-xs font-medium text-muted transition hover:text-navy">← Back to Rosterly</Link>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber">Workspace access</p>
               <h2 className="mt-2 text-[28px] font-semibold leading-tight text-navy">{mode === 'login' ? 'Welcome back' : 'Create account'}</h2>
@@ -98,7 +102,7 @@ export default function Login() {
                   key={item}
                   type="button"
                   className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${mode === item ? 'bg-white text-navy shadow-sm' : 'text-muted'}`}
-                  onClick={() => { setMode(item); setError('') }}
+                  onClick={() => { navigate(item === 'login' ? '/login' : '/signup'); setError('') }}
                 >
                   {item === 'login' ? 'Sign in' : 'Sign up'}
                 </button>
@@ -143,7 +147,8 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                  minLength={mode === 'signup' ? 8 : undefined}
                   placeholder="Enter your password"
                   required
                 />

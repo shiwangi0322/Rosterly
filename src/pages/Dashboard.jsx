@@ -11,7 +11,7 @@ import Avatar from '../components/common/Avatar'
 import { DEMO_TODAY } from '../data/seed'
 
 export default function Dashboard() {
-  const { employees, brands, shifts, leaves, conflicts, activities, settings, processes } = useApp()
+  const { employees, brands, shifts, leaves, conflicts, activities, settings, admin, processes, loading } = useApp()
   const today = DEMO_TODAY
   const iso = format(today, 'yyyy-MM-dd')
   const active = employees.filter((e) => e.status === 'Active')
@@ -36,8 +36,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title={`${hello}, ${settings.adminName}`}
-        subtitle={`${settings.orgName} · ${format(today, 'EEEE, d MMMM yyyy')}. Pending leave: ${pending}.`}
+        title={`${hello}, ${admin?.name || settings.adminName}`}
+        subtitle={loading ? 'Loading your roster and coverage…' : `${settings.orgName} · ${format(today, 'EEEE, d MMMM yyyy')}. Pending leave: ${pending}.`}
         actions={(
           <>
             <Link to="/conflicts" className="btn-ghost">Review alerts</Link>
@@ -46,25 +46,26 @@ export default function Dashboard() {
         )}
       />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
-        <StatCard icon={Users} label="Total employees" value={employees.length} />
-        <StatCard icon={UserCheck} label="Active employees" value={active.length} tone="bg-[#E6F4EE] text-ok" />
-        <StatCard icon={Tag} label="Total brands" value={brands.length} />
-        <StatCard icon={CalendarCheck} label="Scheduled today" value={todayShifts.length} />
-        <StatCard icon={Plane} label="On leave today" value={onLeave.length} tone="bg-[#E6F0FC] text-blue2" />
-        <StatCard icon={ShieldCheck} label="Coverage status" value={`${covered}/${brands.length}`} hint="Brands at minimum today" tone={covered === brands.length ? 'bg-[#E6F4EE] text-ok' : 'bg-[#FCE9E8] text-danger'} />
+        <StatCard icon={Users} label="Total employees" value={loading ? '—' : employees.length} />
+        <StatCard icon={UserCheck} label="Active employees" value={loading ? '—' : active.length} tone="bg-[#E6F4EE] text-ok" />
+        <StatCard icon={Tag} label="Total brands" value={loading ? '—' : brands.length} />
+        <StatCard icon={CalendarCheck} label="Scheduled today" value={loading ? '—' : todayShifts.length} />
+        <StatCard icon={Plane} label="On leave today" value={loading ? '—' : onLeave.length} tone="bg-[#E6F0FC] text-blue2" />
+        <StatCard icon={ShieldCheck} label="Coverage status" value={loading ? '—' : `${covered}/${brands.length}`} hint={loading ? 'Loading coverage' : 'Brands at minimum today'} tone={covered === brands.length ? 'bg-[#E6F4EE] text-ok' : 'bg-[#FCE9E8] text-danger'} />
       </div>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="card p-4 lg:col-span-2">
           <div className="mb-1 flex items-center justify-between">
             <h2 className="font-semibold text-navy">Weekly staffing</h2>
-            <span className="text-xs text-muted">{week.reduce((n, d) => n + d.count, 0)} shifts this week</span>
+            <span className="text-xs text-muted">{loading ? 'Loading shifts…' : `${week.reduce((n, d) => n + d.count, 0)} shifts this week`}</span>
           </div>
           <MiniBars data={week} />
         </div>
         <div className="card p-4">
           <h2 className="mb-3 font-semibold text-navy">Brand-wise staffing today</h2>
           <div className="max-h-56 space-y-2.5 overflow-auto pr-1">
-            {brandStaff.map((b) => {
+            {loading && <p className="py-8 text-center text-sm text-muted">Loading coverage…</p>}
+            {!loading && brandStaff.map((b) => {
               const p = Math.min(100, Math.round((b.staffed / b.min) * 100))
               return (
                 <div key={b.name} className="text-sm">
@@ -110,7 +111,7 @@ export default function Dashboard() {
               })}
             </tbody>
           </table>
-          {!todayShifts.length && <p className="p-6 text-sm text-muted">No shifts scheduled for today.</p>}
+          {!todayShifts.length && <p className="p-6 text-sm text-muted">{loading ? 'Loading today’s roster…' : 'No shifts scheduled for today.'}</p>}
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-3">

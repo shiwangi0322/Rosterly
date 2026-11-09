@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+const API_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:4000/api' : '/api')).replace(/\/+$/, '')
 const TOKEN_KEY = 'rosterly-token'
 
 export function getToken() {
@@ -16,14 +16,19 @@ export function errorText(error) {
 }
 
 export async function api(path, { method = 'GET', body, token = getToken(), auth = true } = {}) {
-  const response = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  })
+  let response
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  } catch {
+    throw new Error('Cannot reach the Rosterly server. Check your connection and try again.')
+  }
   const data = response.status === 204 ? {} : await response.json().catch(() => ({}))
   if (!response.ok) {
     if (response.status === 401 && auth && token) {
@@ -44,15 +49,17 @@ export async function apiList(path) {
   const limit = 100
   const rows = [...(first.data || [])]
   const total = first.total ?? rows.length
-  let page = first.page || 1
-  while (rows.length < total) {
-    page += 1
-    const joiner = path.includes('?') ? '&' : '?'
-    const next = await api(`${path}${joiner}page=${page}&limit=${limit}`)
-    const chunk = next.data || []
-    if (!chunk.length) break
-    rows.push(...chunk)
-  }
+  const firstPage = first.page || 1
+  const pageCount = Math.ceil(total / limit)
+  const joiner = path.includes('?') ? '&' : '?'
+  const remainingPages = Array.from(
+    { length: Math.max(0, pageCount - firstPage) },
+    (_, index) => firstPage + index + 1,
+  )
+  const pages = await Promise.all(remainingPages.map((page) =>
+    api(`${path}${joiner}page=${page}&limit=${limit}`),
+  ))
+  pages.forEach((page) => rows.push(...(page.data || [])))
   return rows
 }
 
@@ -169,6 +176,5 @@ export function settingsBody(row) {
     notifyLeave: Boolean(row.notifyLeave),
     adminName: row.adminName,
     adminEmail: row.adminEmail,
-    adminRole: row.adminRole,
   }
 }

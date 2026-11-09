@@ -12,6 +12,25 @@ body {
   @apply overflow-x-hidden bg-bg text-ink font-sans antialiased;
 }
 
+.landing-rise {
+  animation: landing-rise 650ms cubic-bezier(.2, .75, .25, 1) both;
+}
+
+.landing-delay-1 {
+  animation-delay: 120ms;
+}
+
+@keyframes landing-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .card {
   @apply bg-white border border-line rounded-2xl shadow-[0_1px_2px_rgba(20,45,80,.04)];
 }

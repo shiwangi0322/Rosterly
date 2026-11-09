@@ -5,13 +5,13 @@ const iso = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD')
 const id = z.string().min(1).max(40)
 
 export const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email().transform((value) => value.toLowerCase()),
   password: z.string().min(1),
 })
 
 export const signupSchema = z.object({
   name: z.string().trim().min(2).max(80),
-  email: z.string().email(),
+  email: z.string().trim().email().transform((value) => value.toLowerCase()),
   password: z.string().min(8).max(72),
 })
 
@@ -117,8 +117,7 @@ export const settingsSchema = z.object({
   notifyCoverage: z.boolean(),
   notifyLeave: z.boolean(),
   adminName: z.string().min(2),
-  adminEmail: z.string().email(),
-  adminRole: z.string().min(2),
+  adminEmail: z.string().trim().email().transform((value) => value.toLowerCase()),
 })
 
 export const generateSchema = z.object({

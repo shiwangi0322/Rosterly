@@ -6,17 +6,27 @@ import ConfirmDialog from '../components/common/ConfirmDialog'
 import { useApp } from '../context/AppContext'
 
 export default function Settings() {
-  const { settings, holidays, rules, saveSettings, resetDemo, logout, employees, brands, shifts, leaves } = useApp()
-  const [f, setF] = useState(settings)
+  const { admin, settings, holidays, rules, saveSettings, resetDemo, logout, employees, brands, shifts, leaves } = useApp()
+  const [f, setF] = useState({
+    ...settings,
+    adminName: admin?.name || settings.adminName,
+    adminEmail: admin?.email || settings.adminEmail,
+    adminRole: admin?.role || settings.adminRole,
+  })
   const [hol, setHol] = useState(holidays)
   const [breakMinutes, setBreakMinutes] = useState(rules.breakMinutes)
   const [reset, setReset] = useState(false)
 
   useEffect(() => {
-    setF(settings)
+    setF({
+      ...settings,
+      adminName: admin?.name || settings.adminName,
+      adminEmail: admin?.email || settings.adminEmail,
+      adminRole: admin?.role || settings.adminRole,
+    })
     setHol(holidays)
     setBreakMinutes(rules.breakMinutes)
-  }, [settings, holidays, rules])
+  }, [admin, settings, holidays, rules])
 
   const save = async (e) => {
     e.preventDefault()
@@ -52,7 +62,7 @@ export default function Settings() {
           <h2 className="font-semibold text-navy">Admin profile</h2>
           <Field label="Name"><input className="input" value={f.adminName} onChange={(e) => setF({ ...f, adminName: e.target.value })} /></Field>
           <Field label="Email"><input className="input" type="email" value={f.adminEmail} onChange={(e) => setF({ ...f, adminEmail: e.target.value })} /></Field>
-          <Field label="Role"><input className="input" value={f.adminRole} onChange={(e) => setF({ ...f, adminRole: e.target.value })} /></Field>
+          <Field label="Role"><input className="input cursor-not-allowed bg-bg" value={f.adminRole} readOnly /></Field>
         </div>
         <div className="card space-y-3 p-5">
           <h2 className="font-semibold text-navy">Roster preferences</h2>

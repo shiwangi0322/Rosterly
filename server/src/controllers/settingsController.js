@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js'
+import { signToken } from '../middleware/auth.js'
 import { mapSettings } from '../services/mappers.js'
 import { HttpError, pageParams, pageResult } from '../utils/http.js'
 import { logActivity } from '../services/context.js'
@@ -10,9 +11,35 @@ export async function getSettings(req, res) {
 }
 
 export async function updateSettings(req, res) {
-  const row = await prisma.organizationSettings.update({ where: { id: 'default' }, data: req.body })
-  await logActivity(req.admin.name, 'settings.updated', 'Organization settings updated.')
-  res.json(mapSettings(row))
+  const adminEmail = req.body.adminEmail.trim().toLowerCase()
+  const adminName = req.body.adminName.trim()
+  const organizationData = { ...req.body }
+  delete organizationData.adminEmail
+  delete organizationData.adminName
+
+  const [admin, row] = await prisma.$transaction(async (tx) => {
+    const updatedAdmin = await tx.admin.update({
+      where: { id: req.admin.sub },
+      data: { email: adminEmail, name: adminName },
+    })
+    const updatedSettings = await tx.organizationSettings.update({
+      where: { id: 'default' },
+      data: {
+        ...organizationData,
+        adminEmail: updatedAdmin.email,
+        adminName: updatedAdmin.name,
+        adminRole: updatedAdmin.role,
+      },
+    })
+    return [updatedAdmin, updatedSettings]
+  })
+
+  await logActivity(admin.name, 'settings.updated', 'Organization settings updated.')
+  res.json({
+    ...mapSettings(row),
+    admin: { id: admin.id, email: admin.email, name: admin.name, role: admin.role },
+    token: signToken(admin),
+  })
 }
 
 export async function listActivity(req, res) {

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
 import Login from './pages/Login'
+import Landing from './pages/Landing'
 import { useApp } from './context/AppContext'
 import Dashboard from './pages/Dashboard'
 import Schedule from './pages/Schedule'
@@ -15,11 +16,20 @@ import Reports from './pages/Reports'
 import Settings from './pages/Settings'
 
 export default function App() {
-  const { admin, booting, loading, loadError, refresh, employees } = useApp()
-  if (booting || (admin && loading && employees.length === 0 && !loadError)) {
+  const { admin, booting, loadError, refresh } = useApp()
+  if (booting) {
     return <div className="flex min-h-screen items-center justify-center text-sm text-muted">Loading workspace…</div>
   }
-  if (!admin) return <Login />
+  if (!admin) {
+    return (
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Login />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    )
+  }
   if (loadError) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
@@ -33,6 +43,8 @@ export default function App() {
   }
   return (
     <Routes>
+      <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route path="/signup" element={<Navigate to="/" replace />} />
       <Route element={<MainLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="schedule" element={<Schedule />} />
