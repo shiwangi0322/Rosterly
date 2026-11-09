@@ -23,6 +23,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^6.2.1",
     "prisma": "^6.16.2",
     "supertest": "^7.1.4"
   }
