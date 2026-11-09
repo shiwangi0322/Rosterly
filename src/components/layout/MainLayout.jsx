@@ -141,12 +141,12 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="flex h-screen">
-      <aside className="hidden w-[245px] shrink-0 flex-col border-r border-line bg-white md:flex">
+    <div className="flex h-dvh min-h-0">
+      <aside className="hidden w-[245px] shrink-0 flex-col border-r border-line bg-white lg:flex">
         <Sidebar />
       </aside>
       {mobile && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-deep/40" onClick={() => setMobile(false)} />
           <aside className="relative flex h-full w-[245px] flex-col bg-white shadow-xl">
             <button type="button" className="absolute right-3 top-3 rounded p-1 hover:bg-cream" onClick={() => setMobile(false)} aria-label="Close menu">
@@ -158,17 +158,17 @@ export default function MainLayout() {
       )}
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center gap-3 border-b border-line bg-white px-4 sm:px-5">
-          <button type="button" className="rounded p-1.5 text-muted hover:bg-cream md:hidden" onClick={() => setMobile(true)} aria-label="Open menu">
+          <button type="button" className="shrink-0 rounded p-1.5 text-muted hover:bg-cream lg:hidden" onClick={() => setMobile(true)} aria-label="Open menu">
             <Menu size={18} />
           </button>
-          <div className="text-sm text-muted">
-            Rosterly / <span className="font-medium text-navy">{title}</span>
+          <div className="min-w-0 flex-1 truncate text-xs text-muted sm:flex-none sm:text-sm">
+            <span className="hidden sm:inline">Rosterly / </span><span className="font-medium text-navy">{title}</span>
           </div>
-          <div className="relative ml-auto w-40 min-w-0 sm:w-72">
+          <div className="relative ml-auto w-28 min-w-0 shrink-0 sm:w-48 md:w-56 lg:w-72">
             <Search size={15} className="absolute left-3 top-2.5 text-faint" />
             <input
               className="input pl-9"
-              placeholder="Search employees, brands…"
+              placeholder="Search…"
               aria-label="Global search"
               value={q}
               onChange={(e) => { setQ(e.target.value); setSearchOpen(true) }}
@@ -191,16 +191,16 @@ export default function MainLayout() {
               </div>
             )}
           </div>
-          <a href="mailto:support@datastraw.com" aria-label="Help" className="rounded p-1.5 text-muted hover:bg-cream">
+          <a href="mailto:support@datastraw.com" aria-label="Help" className="shrink-0 rounded p-1.5 text-muted hover:bg-cream">
             <HelpCircle size={18} />
           </a>
           <div className="relative">
-            <button type="button" aria-label="Notifications" className="relative rounded p-1.5 text-muted hover:bg-cream" onClick={() => setBellOpen((v) => !v)}>
+            <button type="button" aria-label="Notifications" className="relative shrink-0 rounded p-1.5 text-muted hover:bg-cream" onClick={() => setBellOpen((v) => !v)}>
               <Bell size={18} />
               {alerts.length > 0 && <i className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-amber" />}
             </button>
             {bellOpen && (
-              <div className="absolute right-0 z-30 mt-2 w-80 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
+              <div className="absolute right-0 z-30 mt-2 w-72 max-w-[calc(100vw-1rem)] overflow-hidden rounded-xl border border-line bg-white shadow-lg sm:w-80">
                 <div className="border-b border-line px-3 py-2 text-sm font-semibold text-navy">Notifications</div>
                 {alerts.length === 0 && <div className="px-3 py-6 text-center text-sm text-muted">You are all caught up.</div>}
                 {alerts.map((a) => (
@@ -215,7 +215,7 @@ export default function MainLayout() {
             )}
           </div>
         </header>
-        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-3 sm:p-4 lg:p-6">
           <Outlet />
         </main>
       </div>
